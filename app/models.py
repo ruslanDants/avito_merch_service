@@ -8,6 +8,7 @@ class User(db.Model):
     - password: пароль (не может быть пустым).
     - balance: баланс монет (по умолчанию 1000, не может быть отрицательным).
     """
+    __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
@@ -25,6 +26,7 @@ class Merch(db.Model):
     - name: название товара (уникальное, не может быть пустым).
     - price: цена в монетах.
     """
+    __tablename__ = "merch"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
     price = db.Column(db.Integer, nullable=False)
@@ -38,11 +40,15 @@ class Transaction(db.Model):
     - amount: сумма перевода.
     - timestamp: время создания транзакции (автоматически заполняется).
     """
+    __tablename__ = "transaction"
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     amount = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.DateTime, server_default=db.func.now())
+
+    sender = db.relationship("User", foreign_keys=[sender_id], backref="sent_transactions")
+    receiver = db.relationship("User", foreign_keys=[receiver_id], backref="received_transactions")
 
 class Purchase(db.Model):
     """
@@ -52,6 +58,7 @@ class Purchase(db.Model):
     - merch_id: ID товара (внешний ключ к Merch).
     - timestamp: время покупки (автоматически заполняется).
     """
+    __tablename__ = "purchase"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     merch_id = db.Column(db.Integer, db.ForeignKey("merch.id"), nullable=False)

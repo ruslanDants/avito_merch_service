@@ -161,3 +161,58 @@ def get_merch(merch_id):
         "name": merch.name,
         "price": merch.price
     }), 200
+
+
+@api_bp.route('/transfer', methods=['POST'])
+@jwt_required()
+def transfer():
+    sender_id = int(get_jwt_identity())  # ID отправителя из токена
+    data = request.get_json()
+
+    # Проверка обязательных полей
+    receiver_username = data.get("receiver")
+    amount = data.get("amount")
+    if not receiver_username or not amount:
+        return jsonify({"error": "Receiver username and amount are required"}), 400
+
+    # Проверка суммы
+    if amount <= 0:
+        return jsonify({"error": "Amount must be positive"}), 400
+
+    # Поиск получателя
+    receiver = User.query.filter_by(username=receiver_username).first()
+    if not receiver:
+        return jsonify({"error": "Receiver not found"}), 404
+
+    # Проверка, что отправитель != получателю
+    if sender_id == receiver.id:
+        return jsonify({"error": "You cannot transfer to yourself"}), 400
+
+    # Получение объекта отправителя
+    sender = User.query.get(sender_id)
+    if not sender:
+        return jsonify({"error": "Sender not found"}), 404
+
+    # Проверка баланса отправителя
+    if sender.balance < amount:
+        return jsonify({"error": "Insufficient funds"}), 400
+
+    # Выполнение перевода
+    try:
+        sender.balance -= amount
+        receiver.balance += amount
+
+        # Создание записи о транзакции
+        transaction = Transaction(
+            sender_id=sender_id,
+            receiver_id=receiver.id,
+            amount=amount
+        )
+        db.session.add(transaction)
+        db.session.commit()
+
+        return jsonify({"message": "Transfer successful"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
