@@ -56,3 +56,5 @@ class Purchase(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     merch_id = db.Column(db.Integer, db.ForeignKey("merch.id"), nullable=False)
     timestamp = db.Column(db.DateTime, server_default=db.func.now())
+
+    merch = db.relationship("Merch", backref="purchases")

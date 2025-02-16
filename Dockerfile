@@ -3,4 +3,4 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
-CMD ["sh", "-c", "sleep 3 && flask run --host=0.0.0.0 --port=8080"]
+CMD ["sh", "-c", "sleep 10 && flask run --host=0.0.0.0 --port=8080"]

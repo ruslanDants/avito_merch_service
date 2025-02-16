@@ -1,5 +1,4 @@
 from flask import Flask
-from .models import Merch
 from .extensions import db, jwt
 
 
@@ -16,6 +15,7 @@ def create_app():
 
     # Создание таблиц и заполнение товаров
     with app.app_context():
+        from .models import User, Merch
         db.create_all()
         # Добавление товаров, если таблица пуста
         if db.session.query(db.exists().where(Merch.id == 1)).scalar():
@@ -37,7 +37,8 @@ def create_app():
         db.session.commit()
 
     # Импорт и регистрация маршрутов
-    from .routes import auth_bp
-    app.register_blueprint(auth_bp)
+    from .routes import auth_bp, api_bp
+    app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(api_bp)
 
     return app
