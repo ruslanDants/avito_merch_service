@@ -39,8 +39,7 @@ def create_app():
             db.session.commit()
 
     # Импорт и регистрация маршрутов
-    from .routes import auth_bp, api_bp
-    app.register_blueprint(auth_bp, url_prefix="/auth")
+    from .routes import api_bp
     app.register_blueprint(api_bp)
 
     return app
