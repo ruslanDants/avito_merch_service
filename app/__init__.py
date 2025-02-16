@@ -9,7 +9,7 @@ def create_app():
     app = Flask(__name__)
 
     app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://user:password@db:5432/merch_db"
-    app.config["JWT_SECRET_KEY"] = "super-secret-key"  # Замените на случайный ключ в реальном проекте!
+    app.config["JWT_SECRET_KEY"] = "super-secret-key"
 
     # Инициализация расширений
     db.init_app(app)
@@ -36,6 +36,12 @@ def create_app():
             ]
             for item in merch_items:
                 db.session.add(Merch(**item))
+            db.session.commit()
+
+        # Выполнить миграции
+        with open("migrations/001_create_indexes.sql") as f:
+            sql = f.read()
+            db.session.execute(sql)
             db.session.commit()
 
     # Импорт и регистрация маршрутов
