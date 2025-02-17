@@ -19,6 +19,31 @@ class User(db.Model):
         db.CheckConstraint("balance >= 0", name="non_negative_balance"),
     )
 
+    def transfer_coins(self, receiver, amount):
+        """Перевод монеты"""
+        if amount <= 0:
+            return False
+        if self.balance < amount:
+            return False
+        if receiver is None or receiver.id == self.id:
+            return False
+
+        self.balance -= amount
+        receiver.balance += amount
+
+        return True
+
+    def buy_item(self, item):
+        """Покупка товара"""
+        if item is None or item.price <= 0:
+            return False
+        if self.balance < item.price:
+            return False
+
+        self.balance -= item.price
+
+        return True
+
 class Merch(db.Model):
     """
     Модель товара (мерча).

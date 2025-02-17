@@ -37,12 +37,14 @@ def create_app():
             for item in merch_items:
                 db.session.add(Merch(**item))
             db.session.commit()
-
-        # Выполнить миграции
-        with open("migrations/001_create_indexes.sql") as f:
-            sql = f.read()
-            db.session.execute(sql)
-            db.session.commit()
+            # Выполнить миграции
+            with open("migrations/001_create_indexes.sql") as f:
+                sql = f.read()
+                try:
+                    db.session.execute(sql)
+                    db.session.commit()
+                except Exception as e:
+                    print(f"Index creation skipped: {e}")
 
     # Импорт и регистрация маршрутов
     from .routes import api_bp

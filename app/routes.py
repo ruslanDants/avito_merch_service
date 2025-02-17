@@ -42,7 +42,7 @@ def auth():
 @jwt_required()
 def info():
     user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
 
     if not user:
         return jsonify({"errors": "User not found"}), 404
@@ -108,18 +108,15 @@ def send_coin():
         return jsonify({"errors": "Receiver not found"}), 404
 
     # Проверка отправителя
-    sender = User.query.get(sender_id)
+    sender = db.session.get(User, sender_id)
     if not sender:
         return jsonify({"errors": "Sender not found"}), 404
 
-    # Проверка баланса
-    if sender.balance < amount:
-        return jsonify({"errors": "Insufficient funds"}), 400
-
     # Выполнение перевода
+    if not sender.transfer_coins(receiver, amount):
+        return jsonify({"errors": "Insufficient funds or invalid transaction"}), 400
+
     try:
-        sender.balance -= amount
-        receiver.balance += amount
         transaction = Transaction(
             sender_id=sender_id,
             receiver_id=receiver.id,
@@ -138,17 +135,17 @@ def send_coin():
 @jwt_required()
 def buy(item):
     user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     merch = Merch.query.filter_by(name=item).first()
 
     if not merch:
         return jsonify({"errors": "Item not found"}), 404
 
-    if user.balance < merch.price:
+    # Покупка товара
+    if not user.buy_item(merch):
         return jsonify({"errors": "Insufficient funds"}), 400
 
     try:
-        user.balance -= merch.price
         purchase = Purchase(user_id=user_id, merch_id=merch.id)
         db.session.add(purchase)
         db.session.commit()
