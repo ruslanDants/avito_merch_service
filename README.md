@@ -62,3 +62,12 @@ inspector = inspect(db.engine)
 if not inspector.has_table("user"):
 ```
 Теперь при старте приложения проверяется, существует ли хотя бы таблица пользователь, и если нет – БД создается и наполняется начальными данными.
+
+### **3️⃣ Оптимизация запросов с помощью индексов**
+Добавил индексы в миграцию Alembic, чтобы ускорить запросы:
+```sql
+CREATE INDEX idx_user_username ON "user" (username);
+CREATE INDEX idx_merch_name ON merch (name);
+CREATE INDEX idx_transaction_sender ON transaction (sender_id);
+CREATE INDEX idx_transaction_receiver ON transaction (receiver_id);
+```
